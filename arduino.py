@@ -10,6 +10,12 @@ class ArduinoTalker(Thread):
         self.serial = serial.Serial('/dev/ttyACM0', 115200)
         self.serial.flush()
 
+    def run(self):  # override run from Thread
+        while True:
+            self.transmit([1, 2, 3, 4])
+            feedback = self.receive()
+            print(feedback)
+
     def transmit(self, u):
         assert len(u) == 4
         msg = ' '.join(map(str, u)) + '\n'
