@@ -15,11 +15,12 @@ class ArduinoTalker(Thread):
             self.transmit([1, 2, 3, 4])
             feedback = self.receive()
             print(feedback)
+            time.sleep(1)
 
     def transmit(self, u):
         assert len(u) == 4
         msg = ' '.join(map(str, u)) + '\n'
-        self.serial.write(msg)
+        self.serial.write(msg.encode())
         # self.serial.write(b"1.1 2.2 3.3 4.4\n")
 
     def receive(self):
