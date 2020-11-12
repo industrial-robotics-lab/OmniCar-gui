@@ -29,7 +29,7 @@ def tx_rx_floats():
         corrupted += 1
 
 
-for _ in range(100):
+for _ in range(1000):
     tx_rx_floats()
 
 print(f"FPS: {1 / (sum(times)/len(times))} ({len(times)} msgs, {corrupted} corrupted)")

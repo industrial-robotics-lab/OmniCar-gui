@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-import omni
-from arduino import *
+from omni import *
+import time
 
-talker = ArduinoTalker()
-talker.start()
-
-talker.join()
+car = Car()
+car.start_arduino_talk()
+for i in range(5):
+    car.print_velocity()
+    time.sleep(0.5)
+car.stop_arduino_talk()
+car.print_velocity()
