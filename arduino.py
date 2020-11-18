@@ -3,7 +3,7 @@ import time
 from threading import Thread
 
 
-class ArduinoTalker(Thread):
+class SerialTransceiver(Thread):
 
     def __init__(self):
         Thread.__init__(self)
@@ -12,18 +12,18 @@ class ArduinoTalker(Thread):
 
     def run(self):  # override run from Thread
         while True:
-            self.transmit([1, 2, 3, 4])
-            feedback = self.receive()
+            self.tx([1, 2, 3, 4])
+            feedback = self.rx()
             print(feedback)
             time.sleep(1)
 
-    def transmit(self, u):
+    def tx(self, u):
         assert len(u) == 4
         msg = ' '.join(map(str, u)) + '\n'
         self.serial.write(msg.encode())
         # self.serial.write(b"1.1 2.2 3.3 4.4\n")
 
-    def receive(self):
+    def rx(self):
         msg = self.serial.readline().decode('utf-8').rstrip()
         wheels_feedback = [float(rpm) for rpm in msg.split(' ')]
         assert len(wheels_feedback) == 4

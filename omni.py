@@ -6,7 +6,8 @@ from threading import Thread
 
 class Car:
     def __init__(self):
-        self._velocity = [0.0, 0.0, 0.0, 0.0]
+        self._desired_velocity = [0.0, 0.0, 0.0, 0.0]
+        self._feedback_velocity = [0.0, 0.0, 0.0, 0.0]
 
         self._port = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
         self._port.flush()
@@ -16,25 +17,30 @@ class Car:
         self._corrupt_count = 0
 
     def set_wheels_velocities(self, u):
-        pass
+        assert len(u) == 4 and max(u) <= 400 and min(u) >= -400
+        self._desired_velocity = u
 
     def set_car_velocity(self, dq):
         pass
 
+    def print_velocity(self):
+        print(f"Velocity: {self._feedback_velocity}")
+
     # ------------- Arduino ----------------
     def tx_velocity(self):
-        byte_array = struct.pack('4f', self._velocity[0], self._velocity[1], self._velocity[2], self._velocity[3])
+        byte_array = struct.pack('4f', self._desired_velocity[0], self._desired_velocity[1], self._desired_velocity[2], self._desired_velocity[3])
         self._port.write(byte_array)
+        self._port.write(b'\n')
 
     def rx_velocity(self):
         response = self._port.readline()
         if len(response) == 17:
-            floats = struct.unpack('4f', response[0:16])
-            self._velocity[0] = floats[0]
-            self._velocity[1] = floats[1]
-            self._velocity[2] = floats[2]
-            self._velocity[3] = floats[3]
-            # print(f"Received {self._velocity}")
+            feedback = struct.unpack('4f', response[0:16])
+            # check +-400
+            self._feedback_velocity[0] = feedback[0]
+            self._feedback_velocity[1] = feedback[1]
+            self._feedback_velocity[2] = feedback[2]
+            self._feedback_velocity[3] = feedback[3]
         else:
             self._corrupt_count += 1
             # print(f"corrupted msg of size {len(response)}")
@@ -60,5 +66,5 @@ class Car:
         self._msg_count = 0
         self._corrupt_count = 0
 
-    def print_velocity(self):
-        print(f"Velocity: {self._velocity}")
+    def is_stop(self):
+        return self._is_stop
