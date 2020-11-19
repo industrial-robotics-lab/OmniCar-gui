@@ -14,7 +14,10 @@ def is_near_zero(s):
 
 
 def normalize(v):
-    return v / np.linalg.norm(v)
+    norm = np.linalg.norm(v)
+    if norm == 0:
+        return v
+    return v / norm
 
 
 def skew(v):
