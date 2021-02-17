@@ -14,10 +14,10 @@ class Car:
         self.w = w
         self.l = l
         self.r = r
-        self.H_0 = np.array([[-l-w, 1, -1],
-                             [ l+w, 1,  1],
-                             [ l+w, 1, -1],
-                             [-l-w, 1,  1]])
+        self.H_0 = 1/r * np.array([[-l-w, 1, -1],
+                                   [ l+w, 1,  1],
+                                   [ l+w, 1, -1],
+                                   [-l-w, 1,  1]])
         self.F = r/4 * np.array([[-1/(l+w), 1/(l+w), 1/(l+w), -1/(l+w)],
                                  [ 1,       1,       1,        1      ],
                                  [-1,       1,      -1,        1      ]])
