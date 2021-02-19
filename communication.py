@@ -1,16 +1,13 @@
 import serial
 import struct
-from threading import Thread
 
 # float array serial transceiver
 class SerialTransceiver:
     max_velocity = 10
-    received_array = []
 
     def __init__(self) -> None:
         self._port = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
         self._port.flush()
-        self._arduino_thread = Thread(target=self.talk_arduino)
         self._is_stop = False
         self._msg_count = 0
         self._corrupt_count = 0
@@ -25,8 +22,7 @@ class SerialTransceiver:
         if len(response) == 13:
             float_array = struct.unpack('3f', response[0:12])
             if max(float_array) <= self.max_velocity and min(float_array) >= -self.max_velocity:
-                self.received_array[0] = float_array[0]
-                self.received_array[1] = float_array[1]
-                self.received_array[2] = float_array[2]
+                return float_array
         else:
             self._corrupt_count += 1
+            return -1
