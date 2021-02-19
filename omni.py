@@ -45,6 +45,7 @@ class Car:
                 self._feedback_velocity[0] = feedback[0]
                 self._feedback_velocity[1] = feedback[1]
                 self._feedback_velocity[2] = feedback[2]
+                print(f"feedback: {feedback}")
         else:
             self._corrupt_count += 1
 
