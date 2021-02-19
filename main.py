@@ -1,51 +1,38 @@
 #!/usr/bin/env python3
-from omni import *
-import time
+from communication import SerialTransceiver
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from threading import Thread
 
-wheels_vels = [
-    [10, 10, 10, 10],
-    [50, 50, 50, 50],
-    [80, 80, 80, 80],
-    [120, 120, 120, 120],
-    [80, 80, 80, 80],
-    [40, 40, 40, 40],
-    [10, 10, 10, 10],
-    [-15, -15, -15, -15],
-    [-50, -50, -50, -50],
-]
+theta = []
+x = []
+y = []
 
-car_vels = [
-    [0, 2, 0],
-    [0, -2, 0],
-    [0, 0, 2],
-    [0.05, 0, 0],
-    [-0.05, 0, 0],
-    [-0.02, 0, 0],
-    [-0.005, 0, 0],
-    [0, 0, 0]
-]
+transceiver = SerialTransceiver()
 
-# wheel diameter = 58.99mm
-# wheel width = 30.54mm
-car = Car(10, 20, 0.0589/2)
+def talk():
+    for i in range(1000):
+        transceiver.tx([0, 0.5, 0])
+        response = transceiver.rx()
+        if (response != -1):
+            theta.append(response[0])
+            x.append(response[1])
+            y.append(response[2])
 
 
-def print_vel():
-    while not car.is_stop():
-        # car.print_velocity()
-        time.sleep(0.5)
+
+def animate(i):
+    plt.cla()  # clear axis (keep line the same color on each iteration)
+    plt.plot(x, y)
 
 
-printer = Thread(target=print_vel)
-printer.start()
+ani = FuncAnimation(plt.gcf(), animate, interval=1000)  # get current figure
 
-car.start_arduino_talk()
-for vel in car_vels:
-# for vel in wheels_vels:
-#     car.set_wheels_velocities(vel)
-    car.set_car_velocity(vel)
-    print(f"Change vel to {vel}")
-    time.sleep(2)
-car.stop_arduino_talk()
+t1 = Thread(target=talk)
 
-printer.join()
+t1.start()
+
+plt.tight_layout()
+plt.show()
+
+t1.join()
