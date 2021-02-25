@@ -26,6 +26,11 @@ switcher = Thread(target=switch_vels)
 car_vels = [
     [0, 0, 0],
     [0, 0.05, 0],
+    [0, 0.05, 0],
+    [0, 0, 0.05],
+    [0, 0, 0.05],
+    [0, 0.05, 0],
+    [0, 0.05, 0],
     [0, 0, 0]
 ]
 
@@ -39,4 +44,4 @@ plt.show()
 
 switcher.join()
 car.stop_arduino_talk()
-print(f"x: {len(car.x)}; y: {len(car.y)}")
+print(f"x: {len(car.x)}; y: {len(car.y)}; repeats: {car.repeats}")
