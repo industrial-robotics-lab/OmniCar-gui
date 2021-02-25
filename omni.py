@@ -1,7 +1,7 @@
 from omnimath import vec6_to_SE3, np
 import serial
 import struct
-from threading import Thread
+import threading
 
 
 class Car:
@@ -16,8 +16,8 @@ class Car:
 
         self._port = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
         self._port.flush()
-        self._arduino_thread = Thread(target=self.talk_arduino)
-        self._is_stop = False
+        self._arduino_thread = threading.Thread(target=self.talk_arduino)
+        self._stop_event = threading.Event()
         self._msg_count = 0
         self._corrupt_count = 0
         self.repeats = 0
@@ -56,11 +56,12 @@ class Car:
                 self.y.append(feedback[2])
 
     def talk_arduino(self):
-        while not self._is_stop:
+        while not self._stop_event.is_set():
             self.tx_velocity()
             self.rx_velocity()
             self._msg_count += 1
         self._port.close()
+        print("port closed")
 
     def start_arduino_talk(self):
         if not self._arduino_thread.is_alive():
@@ -69,12 +70,11 @@ class Car:
             print("Arduino thread is already running")
 
     def stop_arduino_talk(self):
-        self._is_stop = True
+        self._stop_event.set()
+        print("_stop_event.set()")
         self._arduino_thread.join()
         print(
             f"Arduino communication stopped after {self._msg_count} messages ({self._corrupt_count} corrupted)")
         self._msg_count = 0
         self._corrupt_count = 0
-
-    def is_stop(self):
-        return self._is_stop
+        self._stop_event.clear()
