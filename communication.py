@@ -1,6 +1,5 @@
 import serial
 import struct
-from threading import Thread
 
 # float array serial transceiver
 class SerialTransceiver:
@@ -13,7 +12,7 @@ class SerialTransceiver:
         self.x = [0]
         self.y = [0]
 
-        self._port = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+        self._port = serial.Serial('/dev/ttyACM0', 115200, timeout=1, write_timeout=1)
         self._port.flush()
         self._transactions_count = 0
         self._wrong_len_msgs = 0
@@ -45,9 +44,24 @@ class SerialTransceiver:
     
     def talk_arduino(self):
         while not self._is_stop:
-            self.tx()
-            self.rx()
+            try:
+                self.tx()
+            except serial.serialutil.SerialTimeoutException:
+                self._port.cancel_write()
+                print("Cancelled write on timeout")
+                self._is_stop = True
+
+            try:
+                self.rx()
+            except serial.serialutil.SerialTimeoutException:
+                self._port.cancel_read()
+                print("Cancelled read on timeout")
+                self._is_stop = True
+            
             self._transactions_count += 1
+        
+        self._port.reset_input_buffer()
+        self._port.reset_output_buffer()
         self._port.close()
 
     def stop(self):
