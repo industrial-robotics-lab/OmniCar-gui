@@ -6,20 +6,21 @@ from threading import Thread
 # from multiprocessing import Process
 import time
 
+v = 0.05
 car_vels = [
     [0, 0, 0],
-    [0, 0.05, 0],
-    [0, 0, 0.05],
-    [0, -0.05, 0],
-    [0, 0, -0.05],
+    [0, v, 0],
+    [0, 0, v],
+    [0, -v, 0],
+    [0, 0, -v],
     [0, 0, 0]
 ]
 
 def switch_vels():
     for vel in car_vels:
         transceiver.set_msg(vel)
-        # print(f"Change vel to {vel}")
-        time.sleep(2)
+        print(f"Change vel to {vel}")
+        time.sleep(1.5)
     # plt.close()
 
 start = time.perf_counter()
@@ -32,7 +33,7 @@ def animate(i):
 
     global start
     finish = time.perf_counter()
-    print(f"Plot interval = {finish - start}")
+    # print(f"Plot interval = {finish - start}")
     start = finish
 
 ani = FuncAnimation(plt.gcf(), animate, interval=500) # get current figure
