@@ -1,51 +1,54 @@
 #!/usr/bin/env python3
-from omni import *
+from communication import SerialTransceiver
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from threading import Thread
+# from multiprocessing import Process
 import time
 
-wheels_vels = [
-    [10, 10, 10, 10],
-    [50, 50, 50, 50],
-    [80, 80, 80, 80],
-    [120, 120, 120, 120],
-    [80, 80, 80, 80],
-    [40, 40, 40, 40],
-    [10, 10, 10, 10],
-    [-15, -15, -15, -15],
-    [-50, -50, -50, -50],
-]
-
+v = 0.05
 car_vels = [
-    [0, 2, 0],
-    [0, -2, 0],
-    [0, 0, 2],
-    [0.05, 0, 0],
-    [-0.05, 0, 0],
-    [-0.02, 0, 0],
-    [-0.005, 0, 0],
+    [0, 0, 0],
+    [0, v, 0],
+    [0, 0, v],
+    [0, -v, 0],
+    [0, 0, -v],
     [0, 0, 0]
 ]
 
-# wheel diameter = 58.99mm
-# wheel width = 30.54mm
-car = Car(10, 20, 0.0589/2)
+def switch_vels():
+    for vel in car_vels:
+        transceiver.set_msg(vel)
+        print(f"Change vel to {vel}")
+        time.sleep(1.5)
+    # plt.close()
+
+start = time.perf_counter()
+def animate(i):
+    plt.cla() # clear axis (keep line the same color on each iteration)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.plot(transceiver.x, transceiver.y)
 
 
-def print_vel():
-    while not car.is_stop():
-        # car.print_velocity()
-        time.sleep(0.5)
+    global start
+    finish = time.perf_counter()
+    # print(f"Plot interval = {finish - start}")
+    start = finish
 
+ani = FuncAnimation(plt.gcf(), animate, interval=500) # get current figure
 
-printer = Thread(target=print_vel)
-printer.start()
+transceiver = SerialTransceiver()
 
-car.start_arduino_talk()
-for vel in car_vels:
-# for vel in wheels_vels:
-#     car.set_wheels_velocities(vel)
-    car.set_car_velocity(vel)
-    print(f"Change vel to {vel}")
-    time.sleep(2)
-car.stop_arduino_talk()
+switcher = Thread(target=switch_vels)
+talker = Thread(target=transceiver.talk_arduino)
 
-printer.join()
+talker.start()
+switcher.start()
+
+plt.tight_layout()
+plt.show()
+
+switcher.join()
+transceiver.stop()
+talker.join()
