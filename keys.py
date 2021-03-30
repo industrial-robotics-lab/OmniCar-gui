@@ -1,11 +1,6 @@
-#!/usr/bin/env python3
-from communication import SerialTransceiver
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from threading import Thread
-# from multiprocessing import Process
-import time
+from time import sleep
 import keyboard
+from threading import Thread
 
 is_forward = False
 is_left = False
@@ -48,63 +43,31 @@ def parse_keys(event):
         elif event.name == 'e' and is_rotate_right:
             is_rotate_right = False
 
-lin_speed = 0.03
-ang_speed = 0.01
 need_stop = False
-car_vel = [0,0,0]
-def calculate_velocity():
+def evaluate():
     global need_stop
-    global lin_speed
-    global ang_speed
-    global car_vel
     while not need_stop:
-        car_vel = [0,0,0]
+        lin_speed = 0.03
+        ang_speed = 0.01
+        vel = [0,0,0]
         if is_forward:
-            car_vel[0] += lin_speed
-        if is_backward:
-            car_vel[0] -= lin_speed
+            vel[0] += lin_speed
         if is_left:
-            car_vel[1] += lin_speed
+            vel[1] += lin_speed
+        if is_backward:
+            vel[0] -= lin_speed
         if is_right:
-            car_vel[1] -= lin_speed
+            vel[1] -= lin_speed
         if is_rotate_left:
-            car_vel[2] += ang_speed
+            vel[2] += ang_speed
         if is_rotate_right:
-            car_vel[2] -= ang_speed
-        print(f"Velocity: {car_vel}")
-        transceiver.set_msg(car_vel)
-        time.sleep(0.1)
+            vel[2] -= ang_speed
+        print(f"Velocity: {vel}")
+        sleep(0.07)
 
-start = time.perf_counter()
-def animate(i):
-    plt.cla() # clear axis (keep line the same color on each iteration)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.plot(transceiver.x, transceiver.y)
-
-    global start
-    finish = time.perf_counter()
-    # print(f"Plot interval = {finish - start}")
-    start = finish
-
-ani = FuncAnimation(plt.gcf(), animate, interval=500) # get current figure
-
-transceiver = SerialTransceiver()
-
-change_velocity_thread = Thread(target=calculate_velocity)
-change_velocity_thread.start()
-
-arduino_talker_thread = Thread(target=transceiver.talk_arduino)
-arduino_talker_thread.start()
-
-plt.tight_layout()
-plt.show()
-
+t1 = Thread(target=evaluate)
+t1.start()
 keyboard.hook(parse_keys)
 keyboard.wait('esc')
 need_stop = True
-
-transceiver.stop()
-arduino_talker_thread.join()
-
-change_velocity_thread.join()
+t1.join()
