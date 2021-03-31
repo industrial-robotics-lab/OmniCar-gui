@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from time import sleep
 import keyboard
 from threading import Thread
@@ -63,7 +64,7 @@ def evaluate():
         if is_rotate_right:
             vel[2] -= ang_speed
         print(f"Velocity: {vel}")
-        sleep(0.07)
+        sleep(0.5)
 
 t1 = Thread(target=evaluate)
 t1.start()

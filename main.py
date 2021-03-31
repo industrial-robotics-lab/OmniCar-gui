@@ -48,30 +48,28 @@ def parse_keys(event):
         elif event.name == 'e' and is_rotate_right:
             is_rotate_right = False
 
-lin_speed = 0.03
-ang_speed = 0.01
 need_stop = False
 car_vel = [0,0,0]
 def calculate_velocity():
     global need_stop
-    global lin_speed
-    global ang_speed
     global car_vel
+    lin_speed = 0.03
+    ang_speed = 0.1
     while not need_stop:
         car_vel = [0,0,0]
-        if is_forward:
-            car_vel[0] += lin_speed
-        if is_backward:
-            car_vel[0] -= lin_speed
-        if is_left:
-            car_vel[1] += lin_speed
-        if is_right:
-            car_vel[1] -= lin_speed
         if is_rotate_left:
-            car_vel[2] += ang_speed
+            car_vel[0] += ang_speed
         if is_rotate_right:
-            car_vel[2] -= ang_speed
-        print(f"Velocity: {car_vel}")
+            car_vel[0] -= ang_speed
+        if is_forward:
+            car_vel[1] += lin_speed
+        if is_backward:
+            car_vel[1] -= lin_speed
+        if is_left:
+            car_vel[2] += lin_speed
+        if is_right:
+            car_vel[2] -= lin_speed
+        # print(f"Velocity: {car_vel}")
         transceiver.set_msg(car_vel)
         time.sleep(0.1)
 
@@ -96,11 +94,9 @@ change_velocity_thread.start()
 
 arduino_talker_thread = Thread(target=transceiver.talk_arduino)
 arduino_talker_thread.start()
-
+keyboard.hook(parse_keys)
 plt.tight_layout()
 plt.show()
-
-keyboard.hook(parse_keys)
 keyboard.wait('esc')
 need_stop = True
 
