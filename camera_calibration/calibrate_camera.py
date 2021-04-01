@@ -27,7 +27,7 @@ objp = objp * SQUARE_SIZE
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 
-img_paths = glob.glob('C:\\Users\\user\\Documents\\Code\\Python\\CameraCalibration\\img\\*.jpeg')
+img_paths = glob.glob('/home/pi/Documents/omni-platform-python/camera_calibration/img/*.jpeg')
 
 
 for img_path in img_paths:
@@ -59,5 +59,13 @@ print(mtx, "\n")
 print("Dist:")
 print(dist)
 
-cv2.waitKey(100000)
+cv2.waitKey(1000)
 cv2.destroyAllWindows()
+# ------------------------ found camera params -----------------------------
+# Camera matrix:
+# [[498.09258835   0.         323.40423058]
+#  [  0.         497.70636798 247.28028059]
+#  [  0.           0.           1.        ]] 
+
+# Dist:
+# [[ 0.1956769  -0.49535501 -0.00098623  0.00081702  0.35487589]]
