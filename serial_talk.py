@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import serial
 import struct
 from threading import Thread
@@ -11,8 +12,15 @@ msg = [0, 0, 0]
 count = 0
 corrupted = 0
 wrong_len = 0
-
-serialPort = serial.Serial('COM3', 115200, timeout=0.1, write_timeout=0.1)
+# baudrate - msg/sec - isOk
+# 9600       63        True
+# 14400      98        True
+# 19200      129       True
+# 28800      189       True
+# 38400      242       True
+# 57600      318       False (fail on 6586)
+# 115200     451       False (fail on 6871)
+serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1, write_timeout=5)
 trigger = False
 isConnected = False
 
@@ -37,6 +45,7 @@ def talk():
         serialPort.write(byte_array)
         serialPort.write(checksum)
         serialPort.write(b'\n')
+        serialPort.reset_output_buffer()
 
         # rx
         response = serialPort.readline()
