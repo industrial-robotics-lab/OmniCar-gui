@@ -87,7 +87,7 @@ def animate(i):
 
 ani = FuncAnimation(plt.gcf(), animate, interval=500) # get current figure
 
-transceiver = SerialTransceiver()
+transceiver = SerialTransceiver('/dev/ttyACM0', 115200)
 
 change_velocity_thread = Thread(target=calculate_velocity)
 change_velocity_thread.start()

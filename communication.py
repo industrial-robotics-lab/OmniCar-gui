@@ -4,7 +4,7 @@ import struct
 # float array serial transceiver
 class SerialTransceiver:
 
-    def __init__(self) -> None:
+    def __init__(self, port_name, baud_rate) -> None:
         self._msg_to_send = [0, 0, 0]
         self._msg_to_receive = [0, 0, 0]
 
@@ -12,7 +12,7 @@ class SerialTransceiver:
         self.x = [0]
         self.y = [0]
 
-        self._port = serial.Serial('/dev/ttyACM0', 115200, timeout=1, write_timeout=1)
+        self._port = serial.Serial(port_name, baud_rate, timeout=1, write_timeout=1)
         self._port.flush()
         self._transactions_count = 0
         self._wrong_len_msgs = 0
@@ -23,7 +23,20 @@ class SerialTransceiver:
         assert (len(msg) == 3)
         self._msg_to_send = msg
 
+    def get_msg(self):
+        return self._msg_to_receive
+
+    def get_transactions_count(self):
+        return self._transactions_count
+    
+    def get_corrupted_count(self):
+        return self._wrong_len_msgs
+        
+    def get_repeats_count(self):
+        return self._repeats
+
     def tx(self):
+        # print("transmitted")
         byte_array = struct.pack('3f', self._msg_to_send[0], self._msg_to_send[1], self._msg_to_send[2])
         self._port.write(byte_array)
         self._port.write(b'\n')
@@ -31,6 +44,7 @@ class SerialTransceiver:
     def rx(self):
         response = self._port.readline()
         if len(response) == 13:
+            # print("received")
             float_array = struct.unpack('3f', response[0:12])
             self.msg_to_receive = float_array
             if self.theta[-1] == float_array[0] and self.x[-1] == float_array[1] and self.y[-1] == float_array[2]:
