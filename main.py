@@ -3,7 +3,6 @@ from communication import SerialTransceiver
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from threading import Thread
-# from multiprocessing import Process
 import time
 import keyboard
 
@@ -54,7 +53,7 @@ def calculate_velocity():
     global need_stop
     global car_vel
     lin_speed = 0.03
-    ang_speed = 0.1
+    ang_speed = 0.2
     while not need_stop:
         car_vel = [0,0,0]
         if is_rotate_left:
@@ -73,21 +72,21 @@ def calculate_velocity():
         transceiver.set_msg(car_vel)
         time.sleep(0.1)
 
-start = time.perf_counter()
-def animate(i):
-    plt.cla() # clear axis (keep line the same color on each iteration)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.plot(transceiver.x, transceiver.y)
+# start = time.perf_counter()
+# def animate(i):
+#     plt.cla() # clear axis (keep line the same color on each iteration)
+#     plt.xlabel('x')
+#     plt.ylabel('y')
+#     plt.plot(transceiver.x, transceiver.y)
 
-    global start
-    finish = time.perf_counter()
-    # print(f"Plot interval = {finish - start}")
-    start = finish
+#     global start
+#     finish = time.perf_counter()
+#     # print(f"Plot interval = {finish - start}")
+#     start = finish
 
-ani = FuncAnimation(plt.gcf(), animate, interval=500) # get current figure
+# ani = FuncAnimation(plt.gcf(), animate, interval=500) # get current figure
 
-transceiver = SerialTransceiver('/dev/ttyACM0', 115200)
+transceiver = SerialTransceiver('/dev/ttyACM0', 38400)
 
 change_velocity_thread = Thread(target=calculate_velocity)
 change_velocity_thread.start()
@@ -95,8 +94,8 @@ change_velocity_thread.start()
 arduino_talker_thread = Thread(target=transceiver.talk_arduino)
 arduino_talker_thread.start()
 keyboard.hook(parse_keys)
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
 keyboard.wait('esc')
 need_stop = True
 
