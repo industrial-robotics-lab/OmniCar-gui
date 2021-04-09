@@ -3,7 +3,7 @@ import os
 
 cap = cv2.VideoCapture(0)
 COUNT = 1
-abs_path = "/home/pi/Documents/omni-platform-python/camera_calibration/"
+abs_path = "/home/divelix/Documents/omni-platform-python/camera_calibration/"
 
 while True:
     ret, frame = cap.read()

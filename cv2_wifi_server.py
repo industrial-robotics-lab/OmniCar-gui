@@ -2,11 +2,11 @@ import socket, cv2, pickle, struct
 
 # Socket Create
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host_name = socket.gethostname()
-host_ip = socket.gethostbyname(host_name)
-print(f"Host name: {host_name}, ip: {host_ip}")
+# server_socket.connect(("google.com", 80))
+# host_ip = server_socket.getsockname()[0]
+# print(f"Host ip: {host_ip}")
 port = 9999
-socket_address = (host_ip, port)
+socket_address = ("192.168.0.119", port)
 
 # Socket Bind
 server_socket.bind(socket_address)
@@ -22,7 +22,8 @@ while True:
     if client_socket:
         vid = cv2.VideoCapture(0)
         while(vid.isOpened()):
-            img, frame = vid.read()
+            ret, frame = vid.read()
+            frame = cv2.resize(frame, (int(frame.shape[1]*0.5), int(frame.shape[0]*0.5)))
             a = pickle.dumps(frame)
             message = struct.pack("Q", len(a)) + a
             client_socket.sendall(message)
