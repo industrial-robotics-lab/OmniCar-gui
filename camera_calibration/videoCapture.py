@@ -1,17 +1,15 @@
+import cv2
 
-import cv2 as cv
-
-
-cap = cv.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()
-    gry = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    gry = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    cv.imshow('Cam', gry)
-    k = cv.waitKey(5) & 0xFF
+    cv2.imshow('Cam', gry)
+    k = cv2.waitKey(5) & 0xFF
     if k == 27:  # esc
         break
 # print(ret)
 cap.release()
-cv.destroyAllWindows()
+cv2.destroyAllWindows()
