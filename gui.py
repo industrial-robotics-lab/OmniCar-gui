@@ -1,11 +1,12 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt, QPointF
-from PyQt5.QtGui import QColor, QBrush, QImage, QPixmap, QVector2D
+from PyQt5.QtGui import QColor, QBrush, QPixmap, QVector2D
 
 class Knob(QGraphicsEllipseItem):
-    def __init__(self, x, y, d, maxRadius, fetchPosition):
+    def __init__(self, x, y, d, maxRadius, app, fetchPosition):
         super().__init__(0, 0, d, d)
+        self.app = app
         self.fetchPosition = fetchPosition
         self.outPos = QPointF() # ------------------------------------- out
         self.maxRadius = maxRadius
@@ -16,14 +17,14 @@ class Knob(QGraphicsEllipseItem):
         self.setAcceptHoverEvents(True)
 
     def hoverEnterEvent(self, event):
-        app.instance().setOverrideCursor(Qt.OpenHandCursor)
+        self.app.instance().setOverrideCursor(Qt.OpenHandCursor)
 
     def hoverLeaveEvent(self, event):
-        app.instance().setOverrideCursor(Qt.ArrowCursor)
+        self.app.instance().setOverrideCursor(Qt.ArrowCursor)
         # app.instance().restoreOverrideCursor()
     
     def mousePressEvent(self, event):
-        app.instance().setOverrideCursor(Qt.ClosedHandCursor)
+        self.app.instance().setOverrideCursor(Qt.ClosedHandCursor)
 
     def mouseMoveEvent(self, event):
         orig_cursor_pos = event.lastScenePos()
@@ -42,30 +43,10 @@ class Knob(QGraphicsEllipseItem):
         self.fetchPosition(self.outPos)
 
     def mouseReleaseEvent(self, event):
-        app.instance().setOverrideCursor(Qt.OpenHandCursor)
+        self.app.instance().setOverrideCursor(Qt.OpenHandCursor)
         self.setPos(self.basePos.toPointF())
         self.outPos = self.pos()
         self.fetchPosition(self.outPos)
-
-
-class TurnButton(QGraphicsEllipseItem):
-    def __init__(self, x, y, d):
-        super().__init__(x, y, d, d)
-        self.isActive = False # --------------------------------------- out
-        self.setBrush(QBrush(QColor(0, 0, 0), Qt.BrushStyle(1)))
-        self.setAcceptHoverEvents(True)
-    
-    def hoverEnterEvent(self, event):
-        app.instance().setOverrideCursor(Qt.PointingHandCursor)
-
-    def hoverLeaveEvent(self, event):
-        app.instance().restoreOverrideCursor()
-    
-    def mousePressEvent(self, event):
-        self.isActive = True
-
-    def mouseReleaseEvent(self, event):
-        self.isActive = False
 
 
 class LimitCircle(QGraphicsEllipseItem):
@@ -76,43 +57,36 @@ class LimitCircle(QGraphicsEllipseItem):
 
 
 class TurnSlider(QSlider):
-    def __init__(self, maxValue):
+    def __init__(self, maxValue, fetchPosition):
         super().__init__(Qt.Horizontal)
-        self.valueChanged[int].connect(self.onChange)
+        self.valueChanged[int].connect(fetchPosition)
         self.setRange(-maxValue, maxValue)
         self.setValue(0)
-    
-    def onChange(self, value):
-        print(f"Slider value = {value}")
  
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
         self.setValue(0)
 
 
-class GraphicalView(QGraphicsView):
-    def __init__(self, fetchPosition):
+class Touchpad(QGraphicsView):
+    def __init__(self, app, fetchPosition):
         super().__init__()
 
         self.scene = QGraphicsScene()
         self.setScene(self.scene)
         self.setSceneRect(0, 0, 500, 500)
 
-        self.knob = Knob(225, 225, 50, 200, fetchPosition)
+        self.knob = Knob(225, 225, 50, 200, app, fetchPosition)
         self.scene.addItem(self.knob)
         self.limitCircle = LimitCircle(50, 50, 400)
         self.scene.addItem(self.limitCircle)
-        # self.turnLeftBtn = TurnButton(50, 50, 50)
-        # self.scene.addItem(self.turnLeftBtn)
-        # self.turnRightBtn = TurnButton(400, 50, 50)
-        # self.scene.addItem(self.turnRightBtn)
 
 class OmniCarGUI(QWidget):
-    def __init__(self):
+    def __init__(self, app, fetchTouchpadPos, fetchSliderPos):
         super().__init__()
 
-        touchpad = GraphicalView(self.fetchPosition)
-        slider = TurnSlider(100)
+        touchpad = Touchpad(app, fetchTouchpadPos)
+        slider = TurnSlider(100, fetchSliderPos)
         imageLabel = QLabel()
         imageLabel.setPixmap(QPixmap("pencils.jpg").scaled(500, 500, Qt.AspectRatioMode(1)))
 
@@ -126,19 +100,3 @@ class OmniCarGUI(QWidget):
         self.setLayout(layout)
 
         self.setWindowTitle("OmniCar GUI")
-
-    def fetchPosition(self, outPos):
-        pass
-
-knobPos = [0, 0]
-def updateKnobPos(outPos):
-    knobPos[0] = outPos.x()
-    knobPos[1] = outPos.y()
-    print(f"Fetching pos: {knobPos}")
-
-app = QApplication(sys.argv)
-
-main = OmniCarGUI()
-main.show()
-
-sys.exit(app.exec_())
