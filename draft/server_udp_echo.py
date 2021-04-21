@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 from socket import * 
 
-sock = socket(AF_INET, SOCK_DGRAM)
-server_address = ('localhost', 10000)
-print(f"starting up on {server_address[0]} port {server_address[1]}")
-sock.bind(server_address)
+server_address = ("127.0.0.1", 9999)
+buff_size = 1024 # 1Kb
 
-while True:
-    print("\nwaiting to receive message")
-    data, address = sock.recvfrom(4096)
-
-    print(f"received {len(data)} bytes from {address}")
-    print(data)
-
-    if data:
-        send = sock.sendto(data, address)
-        print(f"send {send} bytes back to {address}")
+with socket(AF_INET, SOCK_DGRAM) as server_socket:
+    print(f"Binding to {server_address}")
+    server_socket.bind(server_address)
+    while True:
+        data, client_address = server_socket.recvfrom(buff_size)
+        print(f"Received {data} from {client_address}")
+        if len(data) > 0:
+            msg_len = server_socket.sendto(data, client_address)
+            print(f"Sent {data} back to {client_address}")
