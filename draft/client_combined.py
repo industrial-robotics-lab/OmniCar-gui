@@ -34,6 +34,7 @@ def rx_udp():
         cv2.imshow("RECEIVING VIDEO", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
+            tcp_client_socket.close()
             udp_client_socket.close()
             break
 
