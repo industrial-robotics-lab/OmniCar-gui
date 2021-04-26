@@ -4,12 +4,15 @@ import cv2, imutils, socket, base64
 from threading import Thread
 from communication import SerialTransceiver
 from utils import rescale
+import time
 
 tcp_server_address = ("192.168.0.119", 10001)
 udp_server_address = ("192.168.0.119", 10002)
+# tcp_server_address = ("127.0.0.1", 10001)
+# udp_server_address = ("127.0.0.1", 10002)
 tcp_buff_size = 1024
 udp_buff_size = 65536 # max buffer size
-control_vec = [0,0,0]
+control_vec = [127,127,127]
 
 tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -51,14 +54,17 @@ def tx_udp():
                 break
 
 def set_message():
-    global control_vec, is_stopped
+    global control_vec
     max_lin = 0.1
     max_ang = 0.2
     while not transceiver.is_stop:
         vx = rescale(control_vec[0], 0, 256, -max_lin, max_lin)
         vy = rescale(control_vec[1], 0, 256, -max_lin, max_lin)
         vt = rescale(control_vec[2], 0, 256, -max_ang, max_ang)
-        transceiver.set_msg([vx, vy, vt])
+        vel = [vx, vy, vt]
+        print(f"Set vel to {vel}")
+        transceiver.set_msg(vel)
+        time.sleep(0.1)
 
 # ----------------------- main loop -------------------------
 transceiver = SerialTransceiver('/dev/ttyACM0', 38400)
@@ -75,6 +81,6 @@ arduino_thread.start()
 
 tcp_thread.join()
 udp_thread.join()
-transceiver.is_stop = True
+transceiver.stop()
 transform_thread.join()
 arduino_thread.join()

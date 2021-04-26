@@ -97,6 +97,7 @@ class UdpVideoThread(QThread):
 
     def run(self):
         udp_server_address = ("192.168.0.119", 10002)
+        # udp_server_address = ("127.0.0.1", 10002)
         udp_buff_size = 65536 # max buffer size
         udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, udp_buff_size)
@@ -114,27 +115,30 @@ class UdpVideoThread(QThread):
             convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
             self.changePixmap.emit(convertToQtFormat)
 
+
 class TcpThread(QThread):
     control_vec = [0,0,0]
 
     def run(self):
         tcp_server_address = ("192.168.0.119", 10001)
+        # tcp_server_address = ("127.0.0.1", 10001)
         # tcp_buff_size = 1024
         tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print(f"Connecting TCP client to {tcp_server_address}")
         tcp_client_socket.connect(tcp_server_address)
         while True:
             msg = bytes(self.control_vec) # input str to bytes
+            # print(f"Sending {len(msg)} bytes via TCP")
             tcp_client_socket.sendall(msg)
-    
-    @pyqtSlot(int)
-    def updateAng(self, value):
-        self.control_vec[2] = value
     
     @pyqtSlot(int, int)
     def updateLin(self, x, y):
         self.control_vec[0] = x
         self.control_vec[1] = y
+    
+    @pyqtSlot(int)
+    def updateAng(self, value):
+        self.control_vec[2] = value
 
 
 class OmniCarGUI(QWidget):
@@ -150,7 +154,6 @@ class OmniCarGUI(QWidget):
         tcpThread.start()
 
         self.touchpad = Touchpad()
-        # self.touchpad.knob.changePos.connect(tcpThread.updateLin)
         self.touchpad.changePos.connect(tcpThread.updateLin)
         self.slider = TurnSlider()
         self.slider.valueChanged[int].connect(tcpThread.updateAng)
