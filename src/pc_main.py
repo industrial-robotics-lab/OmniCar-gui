@@ -1,16 +1,15 @@
-import sys
-from PyQt5.QtWidgets import QApplication
+#!/usr/bin/env python3
+# Transmit car control + Receive video
 from gui import OmniCarGUI
+from PyQt5.QtWidgets import QApplication
+import sys
+import cv2, imutils, socket, base64
+from threading import Thread
+import numpy as np
 
-def fetchTouchpadPos(value):
-    print(f"Touchpad: {value}")
-
-def fetchSliderPos(value):
-    print(f"Slider: {value}")
 
 app = QApplication(sys.argv)
-
-gui = OmniCarGUI(app, fetchTouchpadPos, fetchSliderPos)
+gui = OmniCarGUI()
 gui.show()
 
 sys.exit(app.exec_())

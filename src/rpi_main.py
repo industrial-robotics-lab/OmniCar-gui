@@ -2,9 +2,11 @@
 # Receive car control + Transmit video
 import cv2, imutils, socket, base64
 from threading import Thread
+from communication import SerialTransceiver
+from utils import rescale
 
-tcp_server_address = ("127.0.0.1", 10001)
-udp_server_address = ("127.0.0.1", 10002)
+tcp_server_address = ("192.168.0.119", 10001)
+udp_server_address = ("192.168.0.119", 10002)
 tcp_buff_size = 1024
 udp_buff_size = 65536 # max buffer size
 control_vec = [0,0,0]
@@ -48,12 +50,31 @@ def tx_udp():
                 udp_server_socket.close()
                 break
 
+def set_message():
+    global control_vec, is_stopped
+    max_lin = 0.1
+    max_ang = 0.2
+    while not transceiver.is_stop:
+        vx = rescale(control_vec[0], 0, 256, -max_lin, max_lin)
+        vy = rescale(control_vec[1], 0, 256, -max_lin, max_lin)
+        vt = rescale(control_vec[2], 0, 256, -max_ang, max_ang)
+        transceiver.set_msg([vx, vy, vt])
+
 # ----------------------- main loop -------------------------
+transceiver = SerialTransceiver('/dev/ttyACM0', 38400)
+
 tcp_thread = Thread(target=rx_tcp)
 udp_thread = Thread(target=tx_udp)
+transform_thread = Thread(target=set_message)
+arduino_thread = Thread(target=transceiver.talk_arduino)
 
 tcp_thread.start()
 udp_thread.start()
+transform_thread.start()
+arduino_thread.start()
 
 tcp_thread.join()
 udp_thread.join()
+transceiver.is_stop = True
+transform_thread.join()
+arduino_thread.join()

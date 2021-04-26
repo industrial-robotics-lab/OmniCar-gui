@@ -17,7 +17,7 @@ class SerialTransceiver:
         self._port.flush()
         self._transactions_count = 0
         self._wrong_len_msgs = 0
-        self._is_stop = False
+        self.is_stop = False
         self._repeats = 0
         self._corrupted = 0
 
@@ -70,20 +70,20 @@ class SerialTransceiver:
             self._wrong_len_msgs += 1
     
     def talk_arduino(self):
-        while not self._is_stop:
+        while not self.is_stop:
             try:
                 self.tx()
             except serial.serialutil.SerialTimeoutException:
                 self._port.cancel_write()
                 print("Cancelled write on timeout")
-                self._is_stop = True
+                self.is_stop = True
 
             try:
                 self.rx()
             except serial.serialutil.SerialTimeoutException:
                 self._port.cancel_read()
                 print("Cancelled read on timeout")
-                self._is_stop = True
+                self.is_stop = True
             
             self._transactions_count += 1
         
@@ -93,7 +93,7 @@ class SerialTransceiver:
 
     def stop(self):
         print(f"Transactions = {self._transactions_count}\n accepted={len(self.x)}\n repeats: {self._repeats}\n wrong length: {self._wrong_len_msgs}\n corrupted: {self._corrupted}\n")
-        self._is_stop = True
+        self.is_stop = True
         self._transactions_count = 0
         self._repeats = 0
         self._wrong_len_msgs = 0
