@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
-from PyQt5.QtCore import Qt, QPointF, QThread, pyqtSignal, pyqtSlot, QObject
+from PyQt5.QtCore import Qt, QPointF, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QBrush, QPixmap, QVector2D, QImage
-import socket, base64, numpy as np, cv2, struct
+import socket, numpy as np, cv2
 from utils import rescale
 
 class Knob(QGraphicsEllipseItem):
@@ -100,31 +100,11 @@ class UdpVideoThread(QThread):
         udp_server_address = ("127.0.0.1", 10002)
         udp_buff_size = 65536 # max buffer size
         udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # print(udp_client_socket.getsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF))
-        # udp_client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, udp_buff_size)
 
         init_msg = b"Init video transmission from server by this message"
         udp_client_socket.sendto(init_msg, udp_server_address)
         while True:
-            # msg_len = udp_client_socket.recv(4)
-            # msg_len = struct.unpack('i', msg_len)[0]
-            # print(f"Msg len: {msg_len}")
             msg = udp_client_socket.recv(udp_buff_size)
-            # data = base64.b64decode(msg, ' /')
-            # npdata = np.fromstring(data, dtype=np.uint8)
-            # frame = cv2.imdecode(npdata, 1) # 1 means return image as is
-
-            # msg = b''
-            # i = 0
-            # while i < msg_len:
-            #     chunk_size = udp_buff_size
-            #     if msg_len - i < chunk_size:
-            #         chunk_size = msg_len - i
-            #     chunk = udp_client_socket.recv(chunk_size)
-            #     msg += chunk
-            #     i += chunk_size
-            # print(f"i = {i}, msg len = {len(msg)}")
-
             npdata = np.fromstring(msg, dtype=np.uint8)
             frame = cv2.imdecode(npdata, 1) # 1 means return image as is
             rgbImage = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -135,7 +115,7 @@ class UdpVideoThread(QThread):
 
 
 class TcpThread(QThread):
-    control_vec = [0,0,0]
+    control_vec = [127,127,127]
 
     def run(self):
         # tcp_server_address = ("192.168.0.119", 10001)
@@ -147,16 +127,18 @@ class TcpThread(QThread):
         while True:
             msg = bytes(self.control_vec) # input str to bytes
             # print(f"Sending {len(msg)} bytes via TCP")
-            tcp_client_socket.sendall(msg)
+            tcp_client_socket.send(msg)
+            print(f"Sent {self.control_vec}")
     
     @pyqtSlot(int, int)
     def updateLin(self, x, y):
-        self.control_vec[0] = x
+        # y is UP on touchpad, but Car forward direction is x
         self.control_vec[1] = y
+        self.control_vec[2] = x
     
     @pyqtSlot(int)
     def updateAng(self, value):
-        self.control_vec[2] = value
+        self.control_vec[0] = value
 
 
 class OmniCarGUI(QWidget):
