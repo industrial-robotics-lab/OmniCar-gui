@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QPointF, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QBrush, QPixmap, QVector2D, QImage
 import socket, numpy as np, cv2
 from utils import rescale
+import time, struct
 
 class Knob(QGraphicsEllipseItem):
 
@@ -44,8 +45,8 @@ class Knob(QGraphicsEllipseItem):
         self.setPos(self.outPos)
         x = self.vecFromBase.x()
         y = -self.vecFromBase.y()
-        x = rescale(x, -200, 200, 0, 256)
-        y = rescale(y, -200, 200, 0, 256)
+        x = rescale(x, -200, 200, 0, 255)
+        y = rescale(y, -200, 200, 0, 255)
         self.updatePos(x, y)
 
     def mouseReleaseEvent(self, event):
@@ -96,8 +97,8 @@ class UdpVideoThread(QThread):
     changePixmap = pyqtSignal(QImage)
 
     def run(self):
-        # udp_server_address = ("192.168.0.119", 10002)
-        udp_server_address = ("127.0.0.1", 10002)
+        udp_server_address = ("192.168.0.119", 10002)
+        # udp_server_address = ("127.0.0.1", 10002)
         udp_buff_size = 65536 # max buffer size
         udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -118,27 +119,29 @@ class TcpThread(QThread):
     control_vec = [127,127,127]
 
     def run(self):
-        # tcp_server_address = ("192.168.0.119", 10001)
-        tcp_server_address = ("127.0.0.1", 10001)
+        tcp_server_address = ("192.168.0.119", 10001)
+        # tcp_server_address = ("127.0.0.1", 10001)
         # tcp_buff_size = 1024
         tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print(f"Connecting TCP client to {tcp_server_address}")
         tcp_client_socket.connect(tcp_server_address)
         while True:
-            msg = bytes(self.control_vec) # input str to bytes
+            # msg = bytes(self.control_vec) # input str to bytes
+            msg = struct.pack('BBB', self.control_vec[0], self.control_vec[1], self.control_vec[2])
             # print(f"Sending {len(msg)} bytes via TCP")
             tcp_client_socket.send(msg)
-            print(f"Sent {self.control_vec}")
+            time.sleep(0.01)
+            # print(f"Sent {self.control_vec}")
     
     @pyqtSlot(int, int)
     def updateLin(self, x, y):
         # y is UP on touchpad, but Car forward direction is x
         self.control_vec[1] = y
-        self.control_vec[2] = x
+        self.control_vec[2] = 255-x # flip axis
     
     @pyqtSlot(int)
     def updateAng(self, value):
-        self.control_vec[0] = value
+        self.control_vec[0] = 255-value # flip axis
 
 
 class OmniCarGUI(QWidget):
