@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Transmit car control + Receive video
-from gui import OmniCarGUI
+from OmniCarGUI import OmniCarGUI
 from PyQt5.QtWidgets import QApplication
 import sys
 

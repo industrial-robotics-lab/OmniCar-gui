@@ -13,7 +13,7 @@ def animate(i):
     plt.cla() # clear axis (keep line the same color on each iteration)
     plt.plot(x, y)
 
-ani = FuncAnimation(plt.gcf(), animate, interval=1000) # get current figure
+ani = FuncAnimation(plt.gcf(), animate, interval=100) # get current figure
 
 plt.tight_layout()
 plt.show()
