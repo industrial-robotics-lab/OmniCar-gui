@@ -94,29 +94,35 @@ class TurnSlider(QSlider):
 
 
 class Map(QWidget):
-    theta_list = []
-    x_list = []
-    y_list = []
 
     def __init__(self):
         super(Map, self).__init__()
+
+        self.theta_list = [0]
+        self.x_list = [0]
+        self.y_list = [0]
+        
         layout = QHBoxLayout()
         self.setLayout(layout)
 
-        self.figure = plt.figure(figsize=(15,5))
+        self.figure = plt.figure(figsize=(6,5))
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
 
         self._ax = self.figure.add_subplot(111)
         self._ax.set_title('Wheel odometry')
-        self._line = self._ax.plot([], [], 'b.-')[0]
+        self._line = self._ax.plot([], [], 'b-')[0]
+
+        amp = 0.2
+        self._ax.set_xlim(-amp, amp)
+        self._ax.set_ylim(-amp, amp)
 
     @pyqtSlot(float, float, float)
     def add_point_to_map(self, theta, x, y):
-        self.theta_list.append(theta)
-        self.x_list.append(x)
-        self.y_list.append(y)
-        self._line.set_data(x, y)
-        self._ax.set_xlim(min(self.x_list), max(self.x_list))
-        self._ax.set_ylim(min(self.y_list), max(self.y_list))
-        self.canvas.draw()
+        if theta != self.theta_list[-1] or x != self.x_list[-1] or y != self.y_list[-1]:
+            self.theta_list.append(theta)
+            self.x_list.append(x)
+            self.y_list.append(y)
+            # print(f"Got new point: [{theta}, {x}, {y}]; traj size: {len(self.x_list)}")
+            self._line.set_data(self.x_list, self.y_list)
+            self.canvas.draw()

@@ -9,19 +9,25 @@ from OmniCarCommunication import TcpControlThread, UdpVideoThread, TcpMapThread
 class OmniCarGUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(1100, 600)
+        self.resize(1800, 600)
 
-        videoThread = UdpVideoThread(self)
+        # ip = "192.168.0.119"
+        ip = "127.0.0.1"
+        tcp_tx_port = 10001
+        udp_rx_port = 10002
+        tcp_rx_port = 10003
+
+        videoThread = UdpVideoThread(self, (ip, udp_rx_port))
         videoThread.changePixmap.connect(self.setImage)
         videoThread.start()
 
-        tcpControlThread = TcpControlThread(self)
+        tcpControlThread = TcpControlThread(self, (ip, tcp_tx_port))
         tcpControlThread.start()
 
         self.map = Map()
 
-        tcpMapThread = TcpMapThread(self)
-        tcpMapThread.point.connect(self.map.add_point_to_map)
+        tcpMapThread = TcpMapThread(self, (ip, tcp_rx_port))
+        tcpMapThread.mapPointSignal.connect(self.map.add_point_to_map)
         tcpMapThread.start()
 
         self.touchpad = Touchpad()
@@ -37,6 +43,7 @@ class OmniCarGUI(QWidget):
         layout = QHBoxLayout()
         layout.addLayout(vLayout)
         layout.addWidget(self.imageLabel)
+        layout.addWidget(self.map)
         self.setLayout(layout)
 
         self.setWindowTitle("OmniCar GUI")
