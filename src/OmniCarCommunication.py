@@ -18,17 +18,18 @@ class TcpControlThread(QThread):
         while True:
             msg = struct.pack('BBB', self.control_vec[0], self.control_vec[1], self.control_vec[2])
             tcp_client_socket.send(msg)
+            # print(f"Sent [{self.control_vec[0]}, {self.control_vec[1]}, {self.control_vec[2]}]")
             time.sleep(0.01)
     
     @pyqtSlot(int, int)
     def updateLin(self, x, y):
         # y is UP on touchpad, but Car forward direction is x
         self.control_vec[1] = y
-        self.control_vec[2] = 255-x # flip axis
+        self.control_vec[2] = x if x==127 else 255-x # flip axis
     
     @pyqtSlot(int)
     def updateAng(self, value):
-        self.control_vec[0] = 255-value # flip axis
+        self.control_vec[0] = value if value==127 else 255-value # flip axis
 
 
 class UdpVideoThread(QThread):
@@ -73,5 +74,6 @@ class TcpMapThread(QThread):
             bytesReceived = tcp_client_socket.recv(tcp_buff_size)
             if len(bytesReceived) == 12:
                 self.point = struct.unpack('fff', bytesReceived)
+                # print(f"Got map point: [{self.point[0]}, {self.point[1]}, {self.point[2]}]")
                 self.mapPointSignal.emit(*self.point)
 

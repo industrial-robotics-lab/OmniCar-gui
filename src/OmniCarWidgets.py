@@ -113,7 +113,7 @@ class Map(QWidget):
         self._ax.set_title('Wheel odometry')
         self._line = self._ax.plot([], [], 'b-')[0]
 
-        amp = 0.2
+        amp = 0.3
         self._ax.set_xlim(-amp, amp)
         self._ax.set_ylim(-amp, amp)
 
