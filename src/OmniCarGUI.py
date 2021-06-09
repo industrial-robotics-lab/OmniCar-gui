@@ -24,7 +24,7 @@ class OmniCarGUI(QWidget):
         tcpControlThread = TcpControlThread(self, (ip, tcp_tx_port))
         tcpControlThread.start()
 
-        self.map = Map()
+        self.map = Map(limit = 2)
 
         tcpMapThread = TcpMapThread(self, (ip, tcp_rx_port))
         tcpMapThread.mapPointSignal.connect(self.map.add_point_to_map)

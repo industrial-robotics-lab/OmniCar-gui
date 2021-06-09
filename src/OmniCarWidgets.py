@@ -95,7 +95,7 @@ class TurnSlider(QSlider):
 
 class Map(QWidget):
 
-    def __init__(self):
+    def __init__(self, limit):
         super(Map, self).__init__()
 
         self.theta_list = [0]
@@ -111,11 +111,10 @@ class Map(QWidget):
 
         self._ax = self.figure.add_subplot(111)
         self._ax.set_title('Wheel odometry')
-        self._line = self._ax.plot([], [], 'b-')[0]
+        self._line = self._ax.plot([], [], 'k')[0]
 
-        amp = 0.3
-        self._ax.set_xlim(-amp, amp)
-        self._ax.set_ylim(-amp, amp)
+        self._ax.set_xlim(-limit, limit)
+        self._ax.set_ylim(-limit, limit)
 
     @pyqtSlot(float, float, float)
     def add_point_to_map(self, theta, x, y):

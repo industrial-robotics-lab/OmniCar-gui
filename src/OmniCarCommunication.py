@@ -15,10 +15,13 @@ class TcpControlThread(QThread):
         tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print(f"Connecting control tx TCP client to {self.address}")
         tcp_client_socket.connect(self.address)
+        prev_control_vec = [0,0,0]
         while True:
-            msg = struct.pack('BBB', self.control_vec[0], self.control_vec[1], self.control_vec[2])
-            tcp_client_socket.send(msg)
-            # print(f"Sent [{self.control_vec[0]}, {self.control_vec[1]}, {self.control_vec[2]}]")
+            if self.control_vec != prev_control_vec: # check if these values already were sent
+                msg = struct.pack('BBB', self.control_vec[0], self.control_vec[1], self.control_vec[2])
+                tcp_client_socket.send(msg)
+                # print(f"Sent {*self.control_vec,}")
+                prev_control_vec = self.control_vec.copy()
             time.sleep(0.01)
     
     @pyqtSlot(int, int)
