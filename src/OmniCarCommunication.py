@@ -22,7 +22,7 @@ class TcpControlThread(QThread):
                 tcp_client_socket.send(msg)
                 # print(f"Sent {*self.control_vec,}")
                 prev_control_vec = self.control_vec.copy()
-            time.sleep(0.01)
+            time.sleep(0.05)
     
     @pyqtSlot(int, int)
     def updateLin(self, x, y):
@@ -69,7 +69,7 @@ class TcpMapThread(QThread):
         self.address = address
 
     def run(self):
-        tcp_buff_size = 1024
+        tcp_buff_size = 64
         tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print(f"Connecting map rx TCP client to {self.address}")
         tcp_client_socket.connect(self.address)
