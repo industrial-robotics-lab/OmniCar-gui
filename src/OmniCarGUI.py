@@ -11,8 +11,8 @@ class OmniCarGUI(QWidget):
         super().__init__()
         self.resize(1800, 600)
 
-        # ip = "192.168.0.119"
-        ip = "127.0.0.1"
+        ip = "192.168.0.119"
+        # ip = "127.0.0.1"
         tcp_tx_port = 10001
         udp_rx_port = 10002
         tcp_rx_port = 10003
@@ -24,7 +24,7 @@ class OmniCarGUI(QWidget):
         tcpControlThread = TcpControlThread(self, (ip, tcp_tx_port))
         tcpControlThread.start()
 
-        self.map = Map(limit = 2)
+        self.map = Map(limit = 1)
 
         tcpMapThread = TcpMapThread(self, (ip, tcp_rx_port))
         tcpMapThread.mapPointSignal.connect(self.map.add_point_to_map)
